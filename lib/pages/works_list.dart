@@ -71,25 +71,27 @@ class _WorksListPageState extends State<WorksListPage>
                 final _start = snapshot.data == null ? 0 : snapshot.data.length;
                 bloc.add(_start);
 
-                return GridView.builder(
+                final _children = <Widget>[];
+
+                for (int index = 0;
+                    index <
+                        (snapshot.data == null ? 18 : snapshot.data.length + 1);
+                    index++) {
+                  final _movieCard = snapshot.data == null
+                      ? null
+                      : _start > index ? snapshot.data[index] : MovieCard();
+                  _children.add(_buildWorksList(context, _movieCard));
+                }
+
+                return GridView.extent(
                   shrinkWrap: true,
                   padding: EdgeInsets.all(
                     8.0,
                   ),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 5.0,
-                    mainAxisSpacing: 5.0,
-                  ),
-                  itemBuilder: (BuildContext context, int index) {
-                    final _movieCard = snapshot.data == null
-                        ? null
-                        : _start > index ? snapshot.data[index] : MovieCard();
-
-                    return _buildWorksList(context, _movieCard);
-                  },
-                  itemCount:
-                      snapshot.data == null ? 8 : snapshot.data.length + 1,
+                  maxCrossAxisExtent: 180.0,
+                  crossAxisSpacing: 5.0,
+                  mainAxisSpacing: 5.0,
+                  children: _children,
                 );
               });
         },
