@@ -136,6 +136,7 @@ class _HomePageState extends State<HomePage>
           _buildVerticalGridWidget(
             _currentBloc,
             _lrtInsets,
+            180.0,
           ),
         ],
       ),
@@ -194,7 +195,8 @@ class _HomePageState extends State<HomePage>
         });
   }
 
-  Widget _buildVerticalGridWidget(HomeBloc bloc, EdgeInsets insets) {
+  Widget _buildVerticalGridWidget(
+      HomeBloc bloc, EdgeInsets insets, double extent) {
     return SliverPadding(
       padding: insets,
       sliver: StreamBuilder<List<MovieCard>>(
@@ -208,7 +210,7 @@ class _HomePageState extends State<HomePage>
             final _children = <Widget>[];
 
             for (int index = 0;
-                index < (snapshot.data == null ? 4 : snapshot.data.length + 1);
+                index < (snapshot.data == null ? 9 : snapshot.data.length + 1);
                 index++) {
               final _movieCard = snapshot.data == null
                   ? null
@@ -216,8 +218,8 @@ class _HomePageState extends State<HomePage>
               _children.add(_buildRankingList(context, _movieCard));
             }
 
-            return SliverGrid.count(
-              crossAxisCount: 2,
+            return SliverGrid.extent(
+              maxCrossAxisExtent: extent,
               crossAxisSpacing: 5.0,
               mainAxisSpacing: 5.0,
               children: _children,
