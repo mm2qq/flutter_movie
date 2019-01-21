@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 import '../blocs/bloc_provider.dart';
+import '../blocs/favorite_list_bloc.dart';
 import '../blocs/movie_details_bloc.dart';
 import '../models/movie_card.dart';
 import '../routes/router.dart';
@@ -81,81 +82,58 @@ class _MovieDetailsPageState extends State<MovieDetailsPage>
                   child: CupertinoActivityIndicator(),
                 )
               : SingleChildScrollView(
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      left: 8.0,
-                      top: 8.0,
-                      right: 8.0,
-                    ),
-                    child: BlocProvider(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                FadeInImage.memoryNetwork(
-                                  image: movie.images['small'],
-                                  fadeInDuration: Duration(milliseconds: 200),
-                                  placeholder: kTransparentImage,
-                                  fit: BoxFit.cover,
-                                  width: 135.0,
-                                  height: 189.0,
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                    left: 8.0,
-                                  ),
-                                  child: ConstrainedBox(
-                                    constraints: BoxConstraints(
-                                        maxWidth: constraints.maxWidth - 159.0),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        _buildTextWidget(
-                                            movie.title, _bigTextStyle),
-                                        _buildTextWidget(
-                                            movie.originTitle, _smallTextStyle),
-                                        _buildTextWidget(movie.genres.join('，'),
-                                            _smallTextStyle),
-                                        _buildTextWidget(
-                                            '${movie.pubDates.join('，')} | ${movie.durations.join('，')}',
-                                            _smallTextStyle),
-                                        _buildRatingWidget(movie.rating),
-                                        _buildCountWidget(movie.rating.details),
-                                      ],
-                                    ),
-                                  ),
-                                )
-                              ],
+                  padding: EdgeInsets.only(
+                    left: 8.0,
+                    top: 8.0,
+                    right: 8.0,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          FadeInImage.memoryNetwork(
+                            image: movie.images['small'],
+                            fadeInDuration: Duration(milliseconds: 200),
+                            placeholder: kTransparentImage,
+                            fit: BoxFit.cover,
+                            width: 135.0,
+                            height: 189.0,
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(
+                              left: 8.0,
                             ),
-                            Padding(
-                              padding: EdgeInsets.only(
-                                top: 8.0,
-                                bottom: 8.0,
-                              ),
-                              child: Text(
-                                '剧情简介',
-                                style: _bigTextStyle,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                  maxWidth: constraints.maxWidth - 159.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildTextWidget(movie.title, _bigTextStyle),
+                                  _buildTextWidget(
+                                      movie.originTitle, _smallTextStyle),
+                                  _buildTextWidget(
+                                      movie.genres.join('，'), _smallTextStyle),
+                                  _buildTextWidget(
+                                      '${movie.pubDates.join('，')} | ${movie.durations.join('，')}',
+                                      _smallTextStyle),
+                                  _buildRatingWidget(movie.rating),
+                                  _buildCountWidget(movie.rating.details),
+                                ],
                               ),
                             ),
-                            _buildSummaryWidget(movie.summary, _smallTextStyle),
-                            Padding(
-                              padding: EdgeInsets.only(
-                                top: 8.0,
-                                bottom: 8.0,
-                              ),
-                              child: Text(
-                                '演员表',
-                                style: _bigTextStyle,
-                              ),
-                            ),
-                            _buildGridWidget(movie.casts, _smallTextStyle),
-                          ],
-                        ),
-                        blocs: [bloc]),
+                          )
+                        ],
+                      ),
+                      _buildTitleWidget('剧情简介', _bigTextStyle),
+                      _buildSummaryWidget(movie.summary, _smallTextStyle),
+                      _buildTitleWidget('演员表', _bigTextStyle),
+                      _buildGridWidget(movie.casts, _smallTextStyle),
+                      _buildFavoriteWidget(movie),
+                    ],
                   ),
                 );
         },
@@ -227,6 +205,18 @@ class _MovieDetailsPageState extends State<MovieDetailsPage>
     );
   }
 
+  Widget _buildTitleWidget(String title, TextStyle style) {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        vertical: 8.0,
+      ),
+      child: Text(
+        title,
+        style: style,
+      ),
+    );
+  }
+
   Widget _buildSummaryWidget(String summary, TextStyle style) {
     return (summary == null || summary.isEmpty)
         ? Text(
@@ -289,6 +279,85 @@ class _MovieDetailsPageState extends State<MovieDetailsPage>
               itemCount: members.length,
             ),
       height: 200.0,
+    );
+  }
+
+  Widget _buildFavoriteWidget(MovieCard movie) {
+    final _bloc = BlocProvider.of<FavoriteListBloc>(context).first;
+
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        vertical: 8.0,
+      ),
+      child: StreamBuilder<List<String>>(
+          stream: _bloc.favoriteList,
+          builder:
+              (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
+            bool _isFavorite = false;
+
+            if (snapshot.data != null &&
+                snapshot.data.contains('${movie.id}-${movie.title}')) {
+              _isFavorite = true;
+            }
+
+            return Center(
+              child: CupertinoButton(
+                child: Text(
+                  _isFavorite ? '取消收藏' : '加入收藏',
+                  style: TextStyle(
+                    inherit: false,
+                    fontSize: 15.0,
+                  ),
+                ),
+                color: _isFavorite
+                    ? CupertinoColors.destructiveRed
+                    : CupertinoColors.activeBlue,
+                onPressed: () {
+                  _bloc.add('${movie.id}-${movie.title}').then((code) {
+                    showCupertinoDialog(
+                      context: context,
+                      builder: (context) {
+                        var _content = '';
+                        switch (code) {
+                          case FavoriteOperationCode.addSuccess:
+                            _content = '收藏成功';
+                            break;
+                          case FavoriteOperationCode.addFailure:
+                            _content = '收藏失败';
+                            break;
+                          case FavoriteOperationCode.removeSuccess:
+                            _content = '取消收藏成功';
+                            break;
+                          case FavoriteOperationCode.removeFailure:
+                            _content = '取消收藏失败';
+                            break;
+                        }
+
+                        final _confirmAction = CupertinoDialogAction(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text(
+                            '确定',
+                          ),
+                        );
+
+                        return CupertinoAlertDialog(
+                          title: Text(
+                            '提示',
+                          ),
+                          content: Text(
+                            _content,
+                          ),
+                          actions: [_confirmAction],
+                        );
+                      },
+                    );
+                  });
+                },
+              ),
+            );
+          }),
     );
   }
 }
