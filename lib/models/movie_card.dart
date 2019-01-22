@@ -109,7 +109,10 @@ class MovieCard {
 
   @override
   bool operator ==(dynamic other) =>
-      identical(this, other) || int.parse(this.id) == int.parse(other.id);
+      identical(this, other) ||
+      (other is MovieCard &&
+          runtimeType == other.runtimeType &&
+          int.parse(this.id) == int.parse(other.id));
 
   @override
   int get hashCode => int.parse(id);
