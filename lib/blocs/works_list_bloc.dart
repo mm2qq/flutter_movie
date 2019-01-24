@@ -1,7 +1,7 @@
 import 'package:rxdart/rxdart.dart';
 
 import '../api/douban_api.dart';
-import '../models/movie_card.dart';
+import '../models/movie.dart';
 import '../models/works_result.dart';
 import 'bloc_provider.dart';
 
@@ -24,31 +24,25 @@ class WorksListBloc implements BlocBase {
   final int countPerPage;
 
   /// 已拉取列表
-  final _fetchedList = <MovieCard>[];
+  final _fetchedList = <Movie>[];
 
   /// 已拉取位置索引
   final _fetchedStarts = Set<int>();
 
-  final _worksController = PublishSubject<List<MovieCard>>();
-
-  get _worksList => _worksController.sink;
-
-  get worksList => _worksController.stream;
+  final _worksController = PublishSubject<List<Movie>>();
 
   final _startController = PublishSubject<int>();
 
   final _totalController = ReplaySubject<int>(maxSize: 1);
 
+  get _worksList => _worksController.sink;
+
+  get worksList => _worksController.stream;
+
   get total => _totalController.stream;
 
   void add(int start) {
     _startController.sink.add(start);
-  }
-
-  void dispose() {
-    _worksController.close();
-    _startController.close();
-    _totalController.close();
   }
 
   void _handleStarts(List<int> starts) {
@@ -67,9 +61,16 @@ class WorksListBloc implements BlocBase {
     if (result.worksList.length > 0) {
       _totalController.add(result.total);
       result.worksList.forEach((works) {
-        _fetchedList.add(works.subject);
+        _fetchedList.add(works.movie);
       });
       _worksList.add(_fetchedList);
     }
+  }
+
+  @override
+  void dispose() {
+    _worksController.close();
+    _startController.close();
+    _totalController.close();
   }
 }

@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import '../models/list_result.dart';
-import '../models/movie_card.dart';
+import '../models/movie.dart';
 import '../models/ranking_list_type.dart';
 import '../models/ranking_result.dart';
 import '../models/works_result.dart';
@@ -24,33 +24,33 @@ class DoubanAPI {
       {RankingListType type: RankingListType.inTheaters,
       int start: 0,
       int count: 20}) async {
-    String _typeString = _rankingListTypeString(type);
+    final _typeString = _rankingListTypeString(type);
 
-    final uri = Uri.https(
+    final _uri = Uri.https(
       baseUrl,
       'v2/movie/$_typeString',
-      <String, String>{
+      {
         'apikey': apiKey,
         'start': '$start',
         'count': '$count',
       },
     );
 
-    final response = await _getRequest(uri);
+    final _response = await _getRequest(_uri);
 
-    dynamic list =
+    final _list =
         (type == RankingListType.weekly || type == RankingListType.usBox)
-            ? RankingResult.fromJSON(json.decode(response))
-            : ListResult.fromJSON(json.decode(response));
+            ? RankingResult.fromJSON(json.decode(_response))
+            : ListResult.fromJSON(json.decode(_response));
 
-    return list;
+    return _list;
   }
 
   /// 获取影片详情
   ///
   /// [id] 影片ID
-  Future<MovieCard> movie(String id) async {
-    final uri = Uri.https(
+  Future<Movie> movie(String id) async {
+    final _uri = Uri.https(
       baseUrl,
       'v2/movie/subject/$id',
       <String, String>{
@@ -58,10 +58,10 @@ class DoubanAPI {
       },
     );
 
-    final response = await _getRequest(uri);
-    MovieCard movie = MovieCard.fromJSON(json.decode(response));
+    final _response = await _getRequest(_uri);
+    final _movie = Movie.fromJSON(json.decode(_response));
 
-    return movie;
+    return _movie;
   }
 
   /// 获取影人作品
@@ -71,20 +71,20 @@ class DoubanAPI {
   /// [count] 单页大小, 默认`20`
   Future<WorksResult> worksList(String id,
       {int start: 0, int count: 20}) async {
-    final uri = Uri.https(
+    final _uri = Uri.https(
       baseUrl,
       'v2/movie/celebrity/$id/works',
-      <String, String>{
+      {
         'apikey': apiKey,
         'start': '$start',
         'count': '$count',
       },
     );
 
-    final response = await _getRequest(uri);
-    WorksResult list = WorksResult.fromJSON(json.decode(response));
+    final _response = await _getRequest(_uri);
+    final _list = WorksResult.fromJSON(json.decode(_response));
 
-    return list;
+    return _list;
   }
 
   /// 获取搜索结果列表
@@ -94,10 +94,10 @@ class DoubanAPI {
   /// [count] 单页大小, 默认`20`
   Future<ListResult> searchList(String query,
       {int start: 0, int count: 20}) async {
-    final uri = Uri.https(
+    final _uri = Uri.https(
       baseUrl,
       'v2/movie/search',
-      <String, String>{
+      {
         'apikey': apiKey,
         'q': '$query',
         'start': '$start',
@@ -105,10 +105,10 @@ class DoubanAPI {
       },
     );
 
-    final response = await _getRequest(uri);
-    ListResult list = ListResult.fromJSON(json.decode(response));
+    final _response = await _getRequest(_uri);
+    final _list = ListResult.fromJSON(json.decode(_response));
 
-    return list;
+    return _list;
   }
 
   String _rankingListTypeString(RankingListType type) {
@@ -139,10 +139,10 @@ class DoubanAPI {
   }
 
   Future<String> _getRequest(Uri uri) async {
-    final request = await _httpClient.getUrl(uri);
-    final response = await request.close();
+    final _request = await _httpClient.getUrl(uri);
+    final _response = await _request.close();
 
-    return response.transform(utf8.decoder).join();
+    return _response.transform(utf8.decoder).join();
   }
 }
 

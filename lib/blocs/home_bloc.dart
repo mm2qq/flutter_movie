@@ -2,7 +2,7 @@ import 'package:rxdart/rxdart.dart';
 
 import '../api/douban_api.dart';
 import '../models/list_result.dart';
-import '../models/movie_card.dart';
+import '../models/movie.dart';
 import '../models/ranking_list_type.dart';
 import '../models/ranking_result.dart';
 import 'bloc_provider.dart';
@@ -26,7 +26,7 @@ class HomeBloc implements BlocBase {
   final int countPerPage;
 
   /// 已拉取列表
-  final _fetchedList = <MovieCard>[];
+  final _fetchedList = <Movie>[];
 
   /// 已拉取位置索引
   final _fetchedStarts = Set<int>();
@@ -34,13 +34,13 @@ class HomeBloc implements BlocBase {
   /// 总条数
   int total = 0;
 
-  final _rankingController = PublishSubject<List<MovieCard>>();
+  final _rankingController = PublishSubject<List<Movie>>();
+
+  final _startController = PublishSubject<int>();
 
   get _rankingList => _rankingController.sink;
 
   get rankingList => _rankingController.stream;
-
-  final _startController = PublishSubject<int>();
 
   void add(int start) {
     if (start < total) {
@@ -48,11 +48,6 @@ class HomeBloc implements BlocBase {
     } else {
       _startController.sink.add(0);
     }
-  }
-
-  void dispose() {
-    _rankingController.close();
-    _startController.close();
   }
 
   void _handleStarts(List<int> starts) {
@@ -63,8 +58,7 @@ class HomeBloc implements BlocBase {
         _fetchedStarts.add(start);
 
         api.rankingList(type: type, start: start, count: countPerPage).then(
-            (dynamic result) => (type == RankingListType.weekly ||
-                    type == RankingListType.usBox)
+            (result) => result is RankingResult
                 ? _handleRankingList(result, start)
                 : _handleList(result, start));
       }
@@ -72,9 +66,9 @@ class HomeBloc implements BlocBase {
   }
 
   void _handleRankingList(RankingResult result, int start) {
-    if (result.subjects.length > 0) {
-      total = result.subjects.length;
-      result.subjects.forEach((movieRanking) {
+    if (result.rankings.length > 0) {
+      total = result.rankings.length;
+      result.rankings.forEach((movieRanking) {
         _fetchedList.add(movieRanking.subject);
       });
       _rankingList.add(_fetchedList);
@@ -82,12 +76,18 @@ class HomeBloc implements BlocBase {
   }
 
   void _handleList(ListResult result, int start) {
-    if (result.subjects.length > 0) {
+    if (result.movies.length > 0) {
       total = type == RankingListType.newMovies
-          ? result.subjects.length
+          ? result.movies.length
           : result.total;
-      _fetchedList.addAll(result.subjects);
+      _fetchedList.addAll(result.movies);
       _rankingList.add(_fetchedList);
     }
+  }
+
+  @override
+  void dispose() {
+    _rankingController.close();
+    _startController.close();
   }
 }

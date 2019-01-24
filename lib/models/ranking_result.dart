@@ -1,4 +1,4 @@
-import 'movie_card.dart';
+import 'movie.dart';
 
 class MovieRanking {
   MovieRanking({
@@ -7,22 +7,22 @@ class MovieRanking {
   });
 
   final int rank;
-  final MovieCard subject;
+  final Movie subject;
 
   MovieRanking.fromJSON(Map<String, dynamic> json)
       : rank = json['rank'],
-        subject = MovieCard.fromJSON(json['subject']);
+        subject = Movie.fromJSON(json['subject']);
 }
 
 class RankingResult {
   final String date;
   final String title;
-  final List<MovieRanking> subjects;
+  final List<MovieRanking> rankings;
 
   RankingResult.fromJSON(Map<String, dynamic> json)
       : date = json['date'],
         title = json['title'],
-        subjects = (json['subjects'] as List)
+        rankings = (json['subjects'] as List)
             .map((json) => MovieRanking.fromJSON(json))
             .toList();
 }

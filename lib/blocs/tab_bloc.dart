@@ -15,6 +15,7 @@ class TabBloc implements BlocBase {
 
   get tabList => _tabController.stream;
 
+  @override
   void dispose() {
     _tabController.close();
   }

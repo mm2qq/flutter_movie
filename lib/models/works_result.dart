@@ -1,31 +1,31 @@
-import 'movie_card.dart';
+import 'movie.dart';
 
 class Works {
   Works({
     this.roles,
-    this.subject,
+    this.movie,
   });
 
   final List<dynamic> roles;
-  final MovieCard subject;
+  final Movie movie;
 
   Works.fromJSON(Map<String, dynamic> json)
       : roles = json['roles'],
-        subject = MovieCard.fromJSON(json['subject']);
+        movie = Movie.fromJSON(json['subject']);
 }
 
 class WorksResult {
   final int count;
   final int start;
   final int total;
-  final MovieMember celebrity;
+  final MovieMember member;
   final List<Works> worksList;
 
   WorksResult.fromJSON(Map<String, dynamic> json)
       : count = json['count'],
         start = json['start'],
         total = json['total'],
-        celebrity = MovieMember.fromJSON(json['celebrity']),
+        member = MovieMember.fromJSON(json['celebrity']),
         worksList = (json['works'] as List)
             .map((json) => Works.fromJSON(json))
             .toList();

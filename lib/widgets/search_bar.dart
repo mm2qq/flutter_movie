@@ -62,20 +62,20 @@ class _SearchBarState extends State<_SearchBar>
 
   @override
   Widget build(BuildContext context) {
-    const BorderSide _kDefaultRoundedBorderSide = BorderSide(
+    const _kDefaultRoundedBorderSide = BorderSide(
       color: CupertinoColors.lightBackgroundGray,
       style: BorderStyle.solid,
       width: 0.0,
     );
 
-    const Border _kDefaultRoundedBorder = Border(
+    const _kDefaultRoundedBorder = Border(
       top: _kDefaultRoundedBorderSide,
       bottom: _kDefaultRoundedBorderSide,
       left: _kDefaultRoundedBorderSide,
       right: _kDefaultRoundedBorderSide,
     );
 
-    const BoxDecoration _kDefaultRoundedBorderDecoration = BoxDecoration(
+    const _kDefaultRoundedBorderDecoration = BoxDecoration(
       border: _kDefaultRoundedBorder,
       borderRadius: BorderRadius.all(Radius.circular(6.0)),
       color: CupertinoColors.white,

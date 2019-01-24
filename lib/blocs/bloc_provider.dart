@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 Type _typeOf<T>() => T;
 
 abstract class BlocBase {
+  @protected
   void dispose();
 }
 
@@ -23,28 +24,28 @@ class BlocProvider<T extends BlocBase> extends StatefulWidget {
   _BlocProviderState<T> createState() => _BlocProviderState<T>();
 
   static List<T> of<T extends BlocBase>(BuildContext context) {
-    final type = _typeOf<_BlocProviderInherited<T>>();
-    _BlocProviderInherited<T> provider =
-        context.ancestorInheritedElementForWidgetOfExactType(type)?.widget;
-    return provider?.blocs;
+    final _type = _typeOf<_BlocProviderInherited<T>>();
+    _BlocProviderInherited<T> _provider =
+        context.ancestorInheritedElementForWidgetOfExactType(_type)?.widget;
+    return _provider?.blocs;
   }
 }
 
 class _BlocProviderState<T extends BlocBase> extends State<BlocProvider<T>> {
-  @override
-  void dispose() {
-    widget.blocs.map((bloc) {
-      bloc.dispose();
-    });
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return _BlocProviderInherited<T>(
       blocs: widget.blocs,
       child: widget.child,
     );
+  }
+
+  @override
+  void dispose() {
+    widget.blocs.map((bloc) {
+      bloc.dispose();
+    });
+    super.dispose();
   }
 }
 

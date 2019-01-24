@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 
 import '../blocs/bloc_provider.dart';
-import '../blocs/favorite_list_bloc.dart';
+import '../blocs/favorite_bloc.dart';
 import '../blocs/home_bloc.dart';
 import '../blocs/tab_bloc.dart';
-import '../models/movie_card.dart';
+import '../models/movie.dart';
 import '../routes/router.dart';
 import '../widgets/movie_item.dart';
 import '../widgets/search_bar.dart';
@@ -20,22 +20,22 @@ class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   int _tabIndex;
 
-  get _currentBloc {
-    final _blocs = BlocProvider.of<HomeBloc>(context);
-    return _blocs[_tabIndex + 2];
-  }
+  get _homeBlocs => BlocProvider.of<HomeBloc>(context);
+
+  get _currentBloc => _homeBlocs[_tabIndex + 2];
+
+  get _tabBloc => BlocProvider.of<TabBloc>(context).first;
+
+  get _favoriteBloc => BlocProvider.of<FavoriteBloc>(context).first;
 
   @override
   void initState() {
     _tabIndex = 0;
-
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final _homeBlocs = BlocProvider.of<HomeBloc>(context);
-    final _tabBloc = BlocProvider.of<TabBloc>(context).first;
     final _tabBar = MyTabBar(_tabBloc, _handleTap);
 
     final _ltbInsets = EdgeInsets.only(
@@ -166,10 +166,9 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget _buildHorizontalGridWidget(HomeBloc bloc, EdgeInsets insets) {
-    return StreamBuilder<List<MovieCard>>(
+    return StreamBuilder<List<Movie>>(
         stream: bloc.rankingList,
-        builder:
-            (BuildContext context, AsyncSnapshot<List<MovieCard>> snapshot) {
+        builder: (BuildContext context, AsyncSnapshot<List<Movie>> snapshot) {
           // 索引调整
           final _start = snapshot.data == null ? 0 : snapshot.data.length;
           bloc.add(_start);
@@ -184,11 +183,11 @@ class _HomePageState extends State<HomePage>
               mainAxisSpacing: 5.0,
             ),
             itemBuilder: (BuildContext context, int index) {
-              final _movieCard = snapshot.data == null
+              final _movie = snapshot.data == null
                   ? null
-                  : _start > index ? snapshot.data[index] : MovieCard();
+                  : _start > index ? snapshot.data[index] : Movie();
 
-              return _buildRankingList(context, _movieCard);
+              return _buildRankingList(context, _movie);
             },
             itemCount: snapshot.data == null ? 3 : snapshot.data.length + 1,
           );
@@ -199,10 +198,9 @@ class _HomePageState extends State<HomePage>
       HomeBloc bloc, EdgeInsets insets, double extent) {
     return SliverPadding(
       padding: insets,
-      sliver: StreamBuilder<List<MovieCard>>(
+      sliver: StreamBuilder<List<Movie>>(
           stream: bloc.rankingList,
-          builder:
-              (BuildContext context, AsyncSnapshot<List<MovieCard>> snapshot) {
+          builder: (BuildContext context, AsyncSnapshot<List<Movie>> snapshot) {
             // 索引调整
             final _start = snapshot.data == null ? 0 : snapshot.data.length;
             bloc.add(_start);
@@ -212,10 +210,10 @@ class _HomePageState extends State<HomePage>
             for (int index = 0;
                 index < (snapshot.data == null ? 9 : snapshot.data.length + 1);
                 index++) {
-              final _movieCard = snapshot.data == null
+              final _movie = snapshot.data == null
                   ? null
-                  : _start > index ? snapshot.data[index] : MovieCard();
-              _children.add(_buildRankingList(context, _movieCard));
+                  : _start > index ? snapshot.data[index] : Movie();
+              _children.add(_buildRankingList(context, _movie));
             }
 
             return SliverGrid.extent(
@@ -228,15 +226,13 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  Widget _buildRankingList(BuildContext context, MovieCard movieCard) {
-    final _bloc = BlocProvider.of<FavoriteListBloc>(context).first;
-
-    return movieCard == null
+  Widget _buildRankingList(BuildContext context, Movie movie) {
+    return movie == null
         ? Container(
             color: CupertinoColors.lightBackgroundGray,
             child: CupertinoActivityIndicator(),
           )
-        : movieCard.id == null
+        : movie.id == null
             ? Center(
                 child: Text(
                   '_(:з」∠)_\n没有数据了',
@@ -248,53 +244,36 @@ class _HomePageState extends State<HomePage>
                 ),
               )
             : StreamBuilder<List<String>>(
-                stream: _bloc.favoriteList,
+                stream: _favoriteBloc.favoriteList,
                 builder: (BuildContext context,
                     AsyncSnapshot<List<String>> snapshot) {
                   bool _isFavorite = false;
 
                   if (snapshot.data != null &&
-                      snapshot.data
-                          .contains('${movieCard.id}-${movieCard.title}')) {
+                      snapshot.data.contains('${movie.id}-${movie.title}')) {
                     _isFavorite = true;
                   }
 
                   return MovieItemWidget(
-                    movieCard: movieCard,
+                    movie: movie,
                     isFavorite: _isFavorite,
                     onTapped: () {
                       Navigator.push(context,
                           CupertinoPageRoute(builder: (context) {
                         return Router.widget(
-                          '/movie/${movieCard.id}',
+                          '/movie/${movie.id}',
                           context,
-                          params: {'id': movieCard.id},
+                          params: {'id': movie.id},
                         );
                       }));
                     },
                     onTappedFavorite: () {
-                      _bloc
-                          .add('${movieCard.id}-${movieCard.title}')
-                          .then((code) {
+                      _favoriteBloc
+                          .update('${movie.id}-${movie.title}')
+                          .then((info) {
                         showCupertinoDialog(
                           context: context,
                           builder: (context) {
-                            var _content = '';
-                            switch (code) {
-                              case FavoriteOperationCode.addSuccess:
-                                _content = '收藏成功';
-                                break;
-                              case FavoriteOperationCode.addFailure:
-                                _content = '收藏失败';
-                                break;
-                              case FavoriteOperationCode.removeSuccess:
-                                _content = '取消收藏成功';
-                                break;
-                              case FavoriteOperationCode.removeFailure:
-                                _content = '取消收藏失败';
-                                break;
-                            }
-
                             final _confirmAction = CupertinoDialogAction(
                               onPressed: () {
                                 Navigator.of(context).pop();
@@ -309,7 +288,7 @@ class _HomePageState extends State<HomePage>
                                 '提示',
                               ),
                               content: Text(
-                                _content,
+                                info.values.first,
                               ),
                               actions: [_confirmAction],
                             );

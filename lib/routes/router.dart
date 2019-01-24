@@ -35,18 +35,18 @@ class Router {
   }
 
   static Widget widget(String url, BuildContext context, {Map params}) {
-    final urlSections = url.split('/');
-    Widget widget;
+    final _urlSections = url.split('/');
+    Widget _widget;
 
-    for (String _urlSection in urlSections) {
+    for (String _urlSection in _urlSections) {
       for (_Router _router in _routerEntry.children) {
         if (_router.name == _urlSection && _router.widgetBuilder != null) {
-          widget = _router.widgetBuilder(context, params: params);
+          _widget = _router.widgetBuilder(context, params: params);
           break;
         }
       }
     }
 
-    return widget;
+    return _widget;
   }
 }

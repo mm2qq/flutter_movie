@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 import '../blocs/bloc_provider.dart';
-import '../blocs/favorite_list_bloc.dart';
+import '../blocs/favorite_bloc.dart';
 import '../blocs/movie_details_bloc.dart';
-import '../models/movie_card.dart';
+import '../models/movie.dart';
 import '../routes/router.dart';
 import '../widgets/member_item.dart';
 import '../widgets/navigation_bar.dart';
@@ -29,9 +29,11 @@ class _MovieDetailsPageState extends State<MovieDetailsPage>
 
   final MovieDetailsBloc bloc;
 
-  MovieCard movie;
+  Movie movie;
 
   int _summaryLines;
+
+  get _favoriteBloc => BlocProvider.of<FavoriteBloc>(context).first;
 
   @override
   void initState() {
@@ -265,7 +267,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage>
               ),
               itemBuilder: (BuildContext context, int index) {
                 return MemberItemWidget(
-                  movieMember: members[index],
+                  member: members[index],
                   onTap: () {
                     Navigator.push(context,
                         CupertinoPageRoute(builder: (context) {
@@ -282,15 +284,13 @@ class _MovieDetailsPageState extends State<MovieDetailsPage>
     );
   }
 
-  Widget _buildFavoriteWidget(MovieCard movie) {
-    final _bloc = BlocProvider.of<FavoriteListBloc>(context).first;
-
+  Widget _buildFavoriteWidget(Movie movie) {
     return Padding(
       padding: EdgeInsets.symmetric(
         vertical: 8.0,
       ),
       child: StreamBuilder<List<String>>(
-          stream: _bloc.favoriteList,
+          stream: _favoriteBloc.favoriteList,
           builder:
               (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
             bool _isFavorite = false;
@@ -313,26 +313,12 @@ class _MovieDetailsPageState extends State<MovieDetailsPage>
                     ? CupertinoColors.destructiveRed
                     : CupertinoColors.activeBlue,
                 onPressed: () {
-                  _bloc.add('${movie.id}-${movie.title}').then((code) {
+                  _favoriteBloc
+                      .update('${movie.id}-${movie.title}')
+                      .then((info) {
                     showCupertinoDialog(
                       context: context,
                       builder: (context) {
-                        var _content = '';
-                        switch (code) {
-                          case FavoriteOperationCode.addSuccess:
-                            _content = '收藏成功';
-                            break;
-                          case FavoriteOperationCode.addFailure:
-                            _content = '收藏失败';
-                            break;
-                          case FavoriteOperationCode.removeSuccess:
-                            _content = '取消收藏成功';
-                            break;
-                          case FavoriteOperationCode.removeFailure:
-                            _content = '取消收藏失败';
-                            break;
-                        }
-
                         final _confirmAction = CupertinoDialogAction(
                           onPressed: () {
                             Navigator.of(context).pop();
@@ -347,7 +333,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage>
                             '提示',
                           ),
                           content: Text(
-                            _content,
+                            info.values.first,
                           ),
                           actions: [_confirmAction],
                         );

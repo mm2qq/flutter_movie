@@ -36,7 +36,7 @@ class _MyTabBarState extends State<MyTabBar>
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> _items = <Widget>[];
+    final _items = <Widget>[];
 
     return Container(
       color: CupertinoColors.lightBackgroundGray,

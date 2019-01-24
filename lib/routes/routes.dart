@@ -8,11 +8,11 @@ import '../pages/works_list.dart';
 import 'router.dart';
 
 class Routes {
-  static String home = '/';
-  static String details = '/movie/{movieId}';
-  static String works = '/{celebrityId}/works';
-  static String search = '/movie/search/{query}';
-  static String favorites = '/movie/favorites';
+  static const String home = '/';
+  static const String details = '/movie/{movieId}';
+  static const String works = '/{celebrityId}/works';
+  static const String search = '/movie/search/{query}';
+  static const String favorites = '/movie/favorites';
 
   static configRoutes() {
     Router.register(home, (BuildContext context, {Map params}) {

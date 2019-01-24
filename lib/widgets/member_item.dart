@@ -1,16 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:transparent_image/transparent_image.dart';
 
-import '../models/movie_card.dart';
+import '../models/movie.dart';
 
 class MemberItemWidget extends StatelessWidget {
   MemberItemWidget({
     Key key,
-    @required this.movieMember,
+    @required this.member,
     @required this.onTap,
   }) : super(key: key);
 
-  final MovieMember movieMember;
+  final MovieMember member;
 
   final VoidCallback onTap;
 
@@ -22,16 +22,14 @@ class MemberItemWidget extends StatelessWidget {
           child: Column(
             children: [
               FadeInImage.memoryNetwork(
-                image: movieMember.avatars == null
-                    ? ''
-                    : movieMember.avatars['small'],
+                image: member.avatars == null ? '' : member.avatars['small'],
                 fadeInDuration: Duration(milliseconds: 200),
                 placeholder: kTransparentImage,
                 fit: BoxFit.cover,
                 width: 135.0,
               ),
               Text(
-                movieMember.name,
+                member.name,
                 style: TextStyle(
                   inherit: false,
                   color: CupertinoColors.black,
@@ -40,7 +38,7 @@ class MemberItemWidget extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               Text(
-                movieMember.originName,
+                member.originName,
                 style: TextStyle(
                   inherit: false,
                   color: CupertinoColors.inactiveGray,

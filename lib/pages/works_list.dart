@@ -2,9 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../blocs/bloc_provider.dart';
-import '../blocs/favorite_list_bloc.dart';
+import '../blocs/favorite_bloc.dart';
 import '../blocs/works_list_bloc.dart';
-import '../models/movie_card.dart';
+import '../models/movie.dart';
 import '../routes/router.dart';
 import '../widgets/movie_item.dart';
 import '../widgets/navigation_bar.dart';
@@ -28,14 +28,16 @@ class _WorksListPageState extends State<WorksListPage>
 
   final WorksListBloc bloc;
 
-  int total;
+  int _total;
+
+  get _favoriteBloc => BlocProvider.of<FavoriteBloc>(context).first;
 
   @override
   void initState() {
-    total = 0;
-    bloc.total.listen((_total) {
+    _total = 0;
+    bloc.total.listen((total) {
       setState(() {
-        total = _total;
+        _total = total;
       });
     });
     super.initState();
@@ -51,7 +53,7 @@ class _WorksListPageState extends State<WorksListPage>
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: MyNavigationBar(
-        middle: Text('$total部相关作品'),
+        middle: Text('$_total部相关作品'),
         trailing: GestureDetector(
           child: Icon(Icons.favorite_border),
           onTap: () {
@@ -63,10 +65,10 @@ class _WorksListPageState extends State<WorksListPage>
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          return StreamBuilder<List<MovieCard>>(
+          return StreamBuilder<List<Movie>>(
               stream: bloc.worksList,
-              builder: (BuildContext context,
-                  AsyncSnapshot<List<MovieCard>> snapshot) {
+              builder:
+                  (BuildContext context, AsyncSnapshot<List<Movie>> snapshot) {
                 // 索引调整
                 final _start = snapshot.data == null ? 0 : snapshot.data.length;
                 bloc.add(_start);
@@ -77,10 +79,10 @@ class _WorksListPageState extends State<WorksListPage>
                     index <
                         (snapshot.data == null ? 18 : snapshot.data.length + 1);
                     index++) {
-                  final _movieCard = snapshot.data == null
+                  final _movie = snapshot.data == null
                       ? null
-                      : _start > index ? snapshot.data[index] : MovieCard();
-                  _children.add(_buildWorksList(context, _movieCard));
+                      : _start > index ? snapshot.data[index] : Movie();
+                  _children.add(_buildWorksList(context, _movie));
                 }
 
                 return GridView.extent(
@@ -99,15 +101,13 @@ class _WorksListPageState extends State<WorksListPage>
     );
   }
 
-  Widget _buildWorksList(BuildContext context, MovieCard movieCard) {
-    final _bloc = BlocProvider.of<FavoriteListBloc>(context).first;
-
-    return movieCard == null
+  Widget _buildWorksList(BuildContext context, Movie movie) {
+    return movie == null
         ? Container(
             color: CupertinoColors.lightBackgroundGray,
             child: CupertinoActivityIndicator(),
           )
-        : movieCard.id == null
+        : movie.id == null
             ? Center(
                 child: Text(
                   '_(:з」∠)_\n没有数据了',
@@ -119,53 +119,36 @@ class _WorksListPageState extends State<WorksListPage>
                 ),
               )
             : StreamBuilder<List<String>>(
-                stream: _bloc.favoriteList,
+                stream: _favoriteBloc.favoriteList,
                 builder: (BuildContext context,
                     AsyncSnapshot<List<String>> snapshot) {
                   bool _isFavorite = false;
 
                   if (snapshot.data != null &&
-                      snapshot.data
-                          .contains('${movieCard.id}-${movieCard.title}')) {
+                      snapshot.data.contains('${movie.id}-${movie.title}')) {
                     _isFavorite = true;
                   }
 
                   return MovieItemWidget(
-                    movieCard: movieCard,
+                    movie: movie,
                     isFavorite: _isFavorite,
                     onTapped: () {
                       Navigator.push(context,
                           CupertinoPageRoute(builder: (context) {
                         return Router.widget(
-                          '/movie/${movieCard.id}',
+                          '/movie/${movie.id}',
                           context,
-                          params: {'id': movieCard.id},
+                          params: {'id': movie.id},
                         );
                       }));
                     },
                     onTappedFavorite: () {
-                      _bloc
-                          .add('${movieCard.id}-${movieCard.title}')
-                          .then((code) {
+                      _favoriteBloc
+                          .update('${movie.id}-${movie.title}')
+                          .then((info) {
                         showCupertinoDialog(
                           context: context,
                           builder: (context) {
-                            var _content = '';
-                            switch (code) {
-                              case FavoriteOperationCode.addSuccess:
-                                _content = '收藏成功';
-                                break;
-                              case FavoriteOperationCode.addFailure:
-                                _content = '收藏失败';
-                                break;
-                              case FavoriteOperationCode.removeSuccess:
-                                _content = '取消收藏成功';
-                                break;
-                              case FavoriteOperationCode.removeFailure:
-                                _content = '取消收藏失败';
-                                break;
-                            }
-
                             final _confirmAction = CupertinoDialogAction(
                               onPressed: () {
                                 Navigator.of(context).pop();
@@ -180,7 +163,7 @@ class _WorksListPageState extends State<WorksListPage>
                                 '提示',
                               ),
                               content: Text(
-                                _content,
+                                info.values.first,
                               ),
                               actions: [_confirmAction],
                             );

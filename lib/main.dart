@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 
 import 'blocs/bloc_provider.dart';
-import 'blocs/favorite_list_bloc.dart';
+import 'blocs/favorite_bloc.dart';
 import 'blocs/home_bloc.dart';
 import 'blocs/tab_bloc.dart';
 import 'models/ranking_list_type.dart';
@@ -14,10 +14,10 @@ Future<void> main() async {
   Routes.configRoutes();
 
   return runApp(
-    BlocProvider<FavoriteListBloc>(
+    BlocProvider<FavoriteBloc>(
       child: MyApp(),
       blocs: [
-        FavoriteListBloc(),
+        FavoriteBloc(),
       ],
     ),
   );

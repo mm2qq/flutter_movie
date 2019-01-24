@@ -2,7 +2,7 @@ import 'package:rxdart/rxdart.dart';
 
 import '../api/douban_api.dart';
 import '../models/list_result.dart';
-import '../models/movie_card.dart';
+import '../models/movie.dart';
 import 'bloc_provider.dart';
 
 class SearchListBloc implements BlocBase {
@@ -24,31 +24,25 @@ class SearchListBloc implements BlocBase {
   final int countPerPage;
 
   /// 已拉取列表
-  final _fetchedList = <MovieCard>[];
+  final _fetchedList = <Movie>[];
 
   /// 已拉取位置索引
   final _fetchedStarts = Set<int>();
 
-  final _searchController = PublishSubject<List<MovieCard>>();
-
-  get _searchList => _searchController.sink;
-
-  get searchList => _searchController.stream;
+  final _searchController = PublishSubject<List<Movie>>();
 
   final _startController = PublishSubject<int>();
 
   final _totalController = ReplaySubject<int>(maxSize: 1);
 
+  get _searchList => _searchController.sink;
+
+  get searchList => _searchController.stream;
+
   get total => _totalController.stream;
 
   void add(int start) {
     _startController.sink.add(start);
-  }
-
-  void dispose() {
-    _searchController.close();
-    _startController.close();
-    _totalController.close();
   }
 
   void _handleStarts(List<int> starts) {
@@ -64,10 +58,17 @@ class SearchListBloc implements BlocBase {
   }
 
   void _handleSearchList(ListResult result, int start) {
-    if (result.subjects.length > 0) {
+    if (result.movies.length > 0) {
       _totalController.add(result.total);
-      _fetchedList.addAll(result.subjects);
+      _fetchedList.addAll(result.movies);
       _searchList.add(_fetchedList);
     }
+  }
+
+  @override
+  void dispose() {
+    _searchController.close();
+    _startController.close();
+    _totalController.close();
   }
 }

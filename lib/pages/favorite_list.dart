@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../blocs/bloc_provider.dart';
-import '../blocs/favorite_list_bloc.dart';
+import '../blocs/favorite_bloc.dart';
 import '../routes/router.dart';
 import '../widgets/navigation_bar.dart';
 
@@ -13,14 +13,16 @@ class FavoriteListPage extends StatefulWidget {
 
 class _FavoriteListPageState extends State<FavoriteListPage>
     with SingleTickerProviderStateMixin {
-  int total;
+  int _total;
+
+  get _bloc => BlocProvider.of<FavoriteBloc>(context).first;
 
   @override
   void initState() {
-    total = 0;
-    BlocProvider.of<FavoriteListBloc>(context).first.total.listen((_total) {
+    _total = 0;
+    _bloc.total.listen((total) {
       setState(() {
-        total = _total;
+        _total = total;
       });
     });
     super.initState();
@@ -28,11 +30,9 @@ class _FavoriteListPageState extends State<FavoriteListPage>
 
   @override
   Widget build(BuildContext context) {
-    final _bloc = BlocProvider.of<FavoriteListBloc>(context).first;
-
     return CupertinoPageScaffold(
       navigationBar: MyNavigationBar(
-        middle: Text('$total条收藏'),
+        middle: Text('$_total条收藏'),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {

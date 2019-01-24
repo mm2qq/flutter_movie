@@ -2,18 +2,18 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:transparent_image/transparent_image.dart';
 
-import '../models/movie_card.dart';
+import '../models/movie.dart';
 
 class MovieItemWidget extends StatelessWidget {
   MovieItemWidget({
     Key key,
-    @required this.movieCard,
+    @required this.movie,
     @required this.isFavorite,
     @required this.onTapped,
     @required this.onTappedFavorite,
   }) : super(key: key);
 
-  final MovieCard movieCard;
+  final Movie movie;
 
   final bool isFavorite;
 
@@ -31,7 +31,7 @@ class MovieItemWidget extends StatelessWidget {
           child: Stack(children: [
             Positioned.fill(
               child: FadeInImage.memoryNetwork(
-                image: movieCard.images['small'],
+                image: movie.images['small'],
                 fadeInDuration: Duration(milliseconds: 200),
                 placeholder: kTransparentImage,
                 fit: BoxFit.cover,
@@ -43,7 +43,7 @@ class MovieItemWidget extends StatelessWidget {
                   alignment: Alignment.center,
                   color: Colors.green,
                   child: Text(
-                    '${movieCard.rating.average}',
+                    '${movie.rating.average}',
                     style: TextStyle(color: Colors.white),
                   )),
             ),
@@ -61,7 +61,7 @@ class MovieItemWidget extends StatelessWidget {
                               children: [
                                 Expanded(
                                   child: Text(
-                                    movieCard.title,
+                                    movie.title,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       color: Colors.white,
@@ -83,9 +83,7 @@ class MovieItemWidget extends StatelessWidget {
                               ],
                             ),
                             Text(
-                              movieCard.casts
-                                  .map((actor) => actor.name)
-                                  .join("/"),
+                              movie.casts.map((actor) => actor.name).join("/"),
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                   color: Colors.white70, fontSize: 14),
