@@ -53,7 +53,7 @@ class DoubanAPI {
     final _uri = Uri.https(
       baseUrl,
       'v2/movie/subject/$id',
-      <String, String>{
+      {
         'apikey': apiKey,
       },
     );

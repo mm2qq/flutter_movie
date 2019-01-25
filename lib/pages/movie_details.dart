@@ -1,11 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:transparent_image/transparent_image.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../blocs/bloc_provider.dart';
 import '../blocs/favorite_bloc.dart';
 import '../blocs/movie_details_bloc.dart';
 import '../models/movie.dart';
+import '../models/video.dart';
 import '../routes/router.dart';
 import '../widgets/member_item.dart';
 import '../widgets/navigation_bar.dart';
@@ -124,6 +126,8 @@ class _MovieDetailsPageState extends State<MovieDetailsPage>
                                       _smallTextStyle),
                                   _buildRatingWidget(movie.rating),
                                   _buildCountWidget(movie.rating.details),
+                                  _buildVideoWidget(
+                                      movie.videos, _smallTextStyle),
                                 ],
                               ),
                             ),
@@ -197,13 +201,59 @@ class _MovieDetailsPageState extends State<MovieDetailsPage>
       _count += value;
     });
 
-    return Text(
-      '${_count.toInt()}人评分',
-      style: TextStyle(
-        inherit: false,
-        color: Colors.red,
-        fontSize: 15.0,
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: 5.0,
       ),
+      child: Text(
+        '${_count.toInt()}人评分',
+        style: TextStyle(
+          inherit: false,
+          color: Colors.red,
+          fontSize: 15.0,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVideoWidget(List<Video> videos, TextStyle style) {
+    if (videos == null || videos.isEmpty) {
+      return Text(
+        '暂无片源',
+        style: style,
+      );
+    }
+
+    final _children = <Widget>[];
+
+    videos.forEach((video) {
+      final _icon = GestureDetector(
+        child: FadeInImage.memoryNetwork(
+          image: video.source.icon,
+          fadeInDuration: Duration(milliseconds: 200),
+          placeholder: kTransparentImage,
+          fit: BoxFit.cover,
+          height: 32.0,
+          width: 32.0,
+        ),
+        onTap: () async {
+          if (await canLaunch(video.link)) {
+            await launch(
+              video.link,
+              forceSafariVC: false,
+              forceWebView: false,
+            );
+          } else {
+            throw 'Could not launch ${video.link}';
+          }
+        },
+      );
+      _children.add(_icon);
+    });
+
+    return Row(
+      children: _children,
+      mainAxisSize: MainAxisSize.min,
     );
   }
 

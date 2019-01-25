@@ -1,3 +1,5 @@
+import 'video.dart';
+
 class MovieRating {
   final int max;
   final int min;
@@ -48,11 +50,7 @@ class Movie {
   final String id;
   final String title;
   final String originTitle;
-  final String alt;
   final String subType;
-  final int collectCount;
-  final String year;
-  final String mainlandPubDate;
   final bool hasVideo;
   final MovieRating rating;
   final String summary;
@@ -60,7 +58,7 @@ class Movie {
   final List<String> genres;
   final Map<String, String> images;
   final List<MovieMember> casts;
-  final List<MovieMember> directors;
+  final List<Video> videos;
   final List<String> durations;
   final List<String> pubDates;
 
@@ -68,18 +66,14 @@ class Movie {
     this.id,
     this.title,
     this.originTitle,
-    this.alt,
     this.subType,
-    this.collectCount,
-    this.year,
-    this.mainlandPubDate,
     this.hasVideo,
     this.rating,
     this.summary,
     this.genres,
     this.images,
     this.casts,
-    this.directors,
+    this.videos,
     this.durations,
     this.pubDates,
   });
@@ -88,11 +82,7 @@ class Movie {
       : id = json['id'],
         title = json['title'],
         originTitle = json['original_title'],
-        alt = json['alt'],
         subType = json['subtype'],
-        collectCount = json['collect_count'],
-        year = json['year'],
-        mainlandPubDate = json['mainland_pubdate'],
         hasVideo = json['has_video'],
         rating = MovieRating.fromJSON(json['rating']),
         summary = json['summary'],
@@ -101,9 +91,11 @@ class Movie {
         casts = (json['casts'] as List)
             .map((json) => MovieMember.fromJSON(json))
             .toList(),
-        directors = (json['directors'] as List)
-            .map((json) => MovieMember.fromJSON(json))
-            .toList(),
+        videos = json['has_video'] && json['videos'] is List
+            ? (json['videos'] as List)
+                .map((json) => Video.fromJSON(json))
+                .toList()
+            : null,
         durations = List<String>.from(json['durations']),
         pubDates = List<String>.from(json['pubdates']);
 
